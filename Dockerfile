@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.8.0
 COPY ./scripts/* /scripts/
 WORKDIR /scripts
 USER root
