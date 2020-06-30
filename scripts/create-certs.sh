@@ -6,12 +6,26 @@ source /scripts/logger.sh
 
 ln -sf $CERTS_DIR $ES_PATH_CONF/certs
 
-if [[ ! -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
+while [[ ! -f ${ES_PATH_CONF}/certs/ca/ca.crt ]]
+do
+    logger "INFO" "Waiting for CA to be created..."
+    sleep 3
+done
+
+if [[ ! -f ${ES_PATH_CONF}/certs/${POD_NAME}/${POD_NAME}.zip ]]; then
     # Generating certificates
-    /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
+    mkdir -p ${ES_PATH_CONF}/certs/${POD_NAME} && \
+    /usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem \
+                                                             --ca ${ES_PATH_CONF}/certs/ca/ca.p12 \
+                                                             --ca-pass "" \
+                                                             --out ${ES_PATH_CONF}/certs/${POD_NAME}/${POD_NAME}.zip \
+                                                             --name "${POD_NAME}" \
+                                                             --ip "${POD_IP}" \
+                                                             --dns "${POD_NAME}" \
+                                                             --silent
     # Check if certificates was generated properly
-    if [[ -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
-        unzip -o ${ES_PATH_CONF}/certs/bundle.zip -d ${ES_PATH_CONF}/certs && logger "INFO" "Certificates was generated successfully."
+    if [[ -f ${ES_PATH_CONF}/certs/${POD_NAME}/${POD_NAME}.zip ]]; then
+        unzip -o ${ES_PATH_CONF}/certs/${POD_NAME}/${POD_NAME}.zip -d ${ES_PATH_CONF}/certs && logger "INFO" "Certificates was generated successfully."
         logger "INFO" "Certificates was generated successfully."
     else
         logger "ERROR" "Certificates wasn't generated."
