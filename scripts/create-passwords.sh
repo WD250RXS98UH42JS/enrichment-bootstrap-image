@@ -33,7 +33,7 @@ change_password()
                         "$service_url:$service_port/_security/user/$username/_password" \
                         -d '{ "password":"'"$password"'" }')"
     else
-        local $response=500
+        local response=500
     fi
 
     [ $response -eq 200 ] && logger "INFO" "$target_service: password changed successfully." || logger "ERROR" "$target_service: password changing failed."
