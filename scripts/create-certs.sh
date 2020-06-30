@@ -12,6 +12,7 @@ if [[ ! -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
     # Check if certificates was generated properly
     if [[ -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
         unzip -o ${ES_PATH_CONF}/certs/bundle.zip -d ${ES_PATH_CONF}/certs && logger "INFO" "Certificates was generated successfully."
+        logger "INFO" "Certificates was generated successfully."
     else
         logger "ERROR" "Certificates wasn't generated."
     fi
@@ -20,6 +21,7 @@ else
 fi
 
 chown -R 1000:1000 $CERTS_DIR;
+chmod -R 770 $CERTS_DIR;
 chown -R 1000:1000 /usr/share/elasticsearch/data;
 
 logger "INFO" "$CONTAINER_NAME: Job done!"

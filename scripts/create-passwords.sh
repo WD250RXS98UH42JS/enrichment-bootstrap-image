@@ -2,8 +2,6 @@
 
 source /scripts/logger.sh
 
-# HERE SHOULD BE ELASTICSEARCH PASSWORDS CREATION
-
 export ES_BIN_PATH=/usr/share/elasticsearch/bin
 
 change_password()
@@ -24,7 +22,7 @@ change_password()
             local username_status="$(curl -s -o /dev/null -w "%{http_code}" \
                       -XPUT -H 'Content-Type: application/json' \
                       "$service_url:$service_port/_security/user/$username" \
-                      -d '{ "username":"'"$username"'" }')"
+                      -d '{"username":"'"$username"'","roles":[],"password":"'"$password"'":}')"
             [ $username_status -eq 200 ] && logger "INFO" "$target_service: User created successfully." || logger "ERROR" "$target_service: User creation failed."
             ;;
     esac

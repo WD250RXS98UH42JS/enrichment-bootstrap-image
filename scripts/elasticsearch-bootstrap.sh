@@ -4,22 +4,27 @@ source /scripts/logger.sh
 
 # Simple script to load elasticsearch templates, ilm, policies, and all other required objects into the healthy cluster.
 
-export CHECK_SERVICE_URL=$ELASTICSEARCH_URL
-export CHECK_SERVICE_PORT=$ELASTICSEARCH_PORT
-
 . "/scripts/check-service-availability.sh"
 
 #Load in Index Lifecycle polices
 logger "INFO" "Loading! -- ElasticSearch ILM Policies"
 for f in /usr/share/elasticsearch/data/ilm-policies/*.json
 do	
-  logger "INFO" "Processing index lifecycle policy file (full path) $f "
+  logger "INFO" "Processing index lifecycle policy file (full path) $f."
   fn=$(basename $f)
   n="${fn%.*}"
 
-  logger "INFO" "Processing file name $n "
+  logger "INFO" "Processing file name $n."
 
-  curl -s -X PUT "$ELASTICSEARCH_URL:$ELASTICSEARCH_PORT/_ilm/policy/$n?pretty" --insecure -H 'Content-Type: application/json' -d"@$f"
+  declare ilm_policies_response=$(curl -s -o /dev/null -w "%{http_code}" \
+                                       -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_ilm/policy/$n?pretty" \
+                                       -H 'Content-Type: application/json' -d"@$f" \
+                                       --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
+                                       --cert $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.crt \
+                                       --cacert $CERTS_DIR/ca/ca.crt \
+                                       -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
+
+  [ $ilm_policies_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
 
 done
 
@@ -33,7 +38,15 @@ do
 
   logger "INFO" "Processing file name $n "
 
-  curl -s -X PUT "$ELASTICSEARCH_URL:$ELASTICSEARCH_PORT/_template/$n?pretty" --insecure -H 'Content-Type: application/json' -d"@$f"
+  declare index_templates_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
+                                          -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_template/$n?pretty" \
+                                          -H 'Content-Type: application/json' -d"@$f" \
+                                          --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
+                                          --cert $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.crt \
+                                          --cacert $CERTS_DIR/ca/ca.crt \
+                                          -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
+
+  [ $index_templates_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
 
 done
 
@@ -47,7 +60,15 @@ do
 
   logger "INFO" "Processing file name $n "
 
-  curl -s -X PUT "$ELASTICSEARCH_URL:$ELASTICSEARCH_PORT/$n-000001?pretty" --insecure -H 'Content-Type: application/json' -d"@$f"
+  declare index_bootstraps_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
+                                           -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/$n-000001?pretty" \
+                                           -H 'Content-Type: application/json' -d"@$f" \
+                                           --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
+                                           --cert $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.crt \
+                                           --cacert $CERTS_DIR/ca/ca.crt \
+                                           -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
+
+  [ $index_bootstraps_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
 
 done
 
@@ -61,10 +82,16 @@ do
 
   logger "INFO" "Processing file name $n "
 
-  curl -s -X PUT "$ELASTICSEARCH_URL:$ELASTICSEARCH_PORT/_security/role_mapping/$n" --insecure -H 'Content-Type: application/json' -d"@$f"
+  declare role_bootstraps_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
+                                          -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/role_mapping/$n" \
+                                          -H 'Content-Type: application/json' -d"@$f" \
+                                          --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
+                                          --cert $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.crt \
+                                          --cacert $CERTS_DIR/ca/ca.crt \
+                                          -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
+
+  [ $role_bootstraps_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
 
 done
-
-logger "INFO" "Bootstrap Execution completed."
 
 logger "INFO" "$CONTAINER_NAME: Job done!"

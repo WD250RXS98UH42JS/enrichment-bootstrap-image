@@ -15,24 +15,39 @@ build()
 
 run()
 {
+    # -e xpack.security.enabled='true' \
+    # -e xpack.security.authc.realms.native.realm1.authentication.enabled='false' \
+
+    # xpack.security.authc:
+    #     anonymous:
+    #         username: anonymous_user 
+    #         roles: role1, role2
+
+    # -e ELASTIC_PASSWORD='password' \
+
+    # docker run -d -t \
+    # -e ES_PATH_CONF='/usr/share/elasticsearch/data/config' \
+    # -e CERTS_DIR='/tmp/certs' \
+    # -e SERVICE_URL='http://127.0.0.1' \
+    # -e SERVICE_PORT='9200' \
+    # -e DESIRED_STATUS='green' \
+    # -e network.host='127.0.0.1' \
+    # -e discovery.type='single-node' \
+    # -e xpack.license.self_generated.type='trial' \
+    # -e xpack.security.enabled='true' \
+    # -e xpack.security.authc.anonymous.username='anonymous_user' \
+    # -e xpack.security.authc.anonymous.roles='superuser' \
+    # -e ELASTIC_USER_B64='ZWxhc3RpYwo=' \
+    # -e ELASTIC_PASSWORD_B64='cGFzc3dvcmQ=' \
+    # -e LOGSTASH_USER_B64='bG9nc3Rhc2hfc3lzdGVtCg==' \
+    # -e LOGSTASH_PASSWORD_B64='cGFzc3dvcmQ=' \
+    # -e KIBANA_USER_B64='a2liYW5hCg==' \
+    # -e KIBANA_PASSWORD_B64='cGFzc3dvcmQ=' \
+    # --name $DEFAULT_CONTAINER_TAG $IMG_TAG
+
     docker run -d -t \
     -e ES_PATH_CONF='/usr/share/elasticsearch/data/config' \
     -e CERTS_DIR='/tmp/certs' \
-    -e SERVICE_URL='http://127.0.0.1' \
-    -e SERVICE_PORT='9200' \
-    -e DESIRED_STATUS='green' \
-    -e network.host='127.0.0.1' \
-    -e discovery.type='single-node' \
-    -e xpack.license.self_generated.type='trial' \
-    -e xpack.security.enabled='true' \
-    -e xpack.security.authc.anonymous.username='anonymous_user' \
-    -e xpack.security.authc.anonymous.roles='superuser' \
-    -e ELASTIC_USER_B64='ZWxhc3RpYwo=' \
-    -e ELASTIC_PASSWORD_B64='cGFzc3dvcmQ=' \
-    -e LOGSTASH_USER_B64='bG9nc3Rhc2hfc3lzdGVtCg==' \
-    -e LOGSTASH_PASSWORD_B64='cGFzc3dvcmQ=' \
-    -e KIBANA_USER_B64='a2liYW5hCg==' \
-    -e KIBANA_PASSWORD_B64='cGFzc3dvcmQ=' \
     --name $DEFAULT_CONTAINER_TAG $IMG_TAG
 }
 
