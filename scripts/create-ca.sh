@@ -17,6 +17,13 @@ if [[ ! -f ${ES_PATH_CONF}/certs/ca/ca.crt ]]; then
     else
         logger "ERROR" "CA wasn't generated."
     fi
+    # Adding CA to truststore
+    truststore_status=$(echo yes | keytool -import -alias caelk -file ${ES_PATH_CONF}/certs/ca/ca.crt -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit' | grep keystore | cut -d" " -f4)
+    if [[ $truststore_status -eq 1 ]]; then
+        logger "INFO" "CA was successfully added to truststore."
+    else
+        logger "ERROR" "CA wasn't added to truststore."
+    fi
 else
     logger "INFO" "CA already exists, skipping creation step."
 fi
