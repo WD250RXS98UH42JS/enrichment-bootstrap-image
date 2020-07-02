@@ -2,7 +2,7 @@
 
 source /scripts/logger.sh
 
-until $(curl --insecure --output /dev/null --silent --head --fail https://kibana:5601/api/status);
+until $(curl --insecure -u ${KIBANA_USER}:${KIBANA_PASSWORD} --output /dev/null --silent --fail https://kibana:5601/api/status);
 do
 logger "INFO" "Kibana is down, waits until it starts"
 sleep 1
