@@ -38,7 +38,7 @@ do
 
   logger "INFO" "Processing file name $n "
 
-  declare index_templates_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
+  declare index_templates_response=$(curl -s -o /dev/null -w "%{http_code}" \
                                           -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_template/$n?pretty" \
                                           -H 'Content-Type: application/json' -d"@$f" \
                                           --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
@@ -60,7 +60,7 @@ do
 
   logger "INFO" "Processing file name $n "
 
-  declare index_bootstraps_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
+  declare index_bootstraps_response=$(curl -s -o /dev/null -w "%{http_code}" \
                                            -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/$n-000001?pretty" \
                                            -H 'Content-Type: application/json' -d"@$f" \
                                            --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
@@ -69,28 +69,6 @@ do
                                            -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
 
   [ $index_bootstraps_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
-
-done
-
-#Bootstrap all required roles
-logger "INFO" "Loading! -- Bootstraping Roles"
-for f in /usr/share/elasticsearch/data/role-bootstraps/*.json
-do  
-  logger "INFO" "Processing role bootstrap file (full path) $f "
-  fn=$(basename $f)
-  n="${fn%.*}"
-
-  logger "INFO" "Processing file name $n "
-
-  declare role_bootstraps_response=$(curl -s -o /dev/null -w "%{http_code}" \ 
-                                          -X PUT "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/role_mapping/$n" \
-                                          -H 'Content-Type: application/json' -d"@$f" \
-                                          --key $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.key \
-                                          --cert $CERTS_DIR/$CHECK_SERVICE_CERT/$CHECK_SERVICE_CERT.crt \
-                                          --cacert $CERTS_DIR/ca/ca.crt \
-                                          -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD)
-
-  [ $role_bootstraps_response -eq 200 ] && logger "INFO" "$fn: processed successfully." || logger "ERROR" "$fn: processing failed."
 
 done
 

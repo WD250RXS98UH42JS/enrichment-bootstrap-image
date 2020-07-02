@@ -4,7 +4,7 @@ source /scripts/logger.sh
 
 . "/scripts/move-elasticsearch-config.sh"
 
-ln -sf $CERTS_DIR $ES_PATH_CONF/certs
+# [[ ! -f $ES_PATH_CONF/certs ]] && ln -sf $CERTS_DIR $ES_PATH_CONF/certs
 
 # while [[ ! -f ${ES_PATH_CONF}/certs/ca/ca.crt ]]
 # do
@@ -34,25 +34,31 @@ ln -sf $CERTS_DIR $ES_PATH_CONF/certs
 
 if [[ ! -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
     # Generating certificates
+    # /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
     /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
     # Check if certificates was generated properly
     if [[ -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
         unzip -o ${ES_PATH_CONF}/certs/bundle.zip -d ${ES_PATH_CONF}/certs && \
         logger "INFO" "Certificates was generated successfully."
 
-        ###########
         # Adding CA to truststore
         if [[ ! -f ${ES_PATH_CONF}/certs/truststore.jks ]]; then
-            echo yes | /usr/share/elasticsearch/jdk/bin/keytool -import -v -trustcacerts -alias caelk -file ${ES_PATH_CONF}/certs/ca/ca.crt -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit'
-            # truststore_status=$(echo yes | /usr/share/elasticsearch/jdk/bin/keytool -import -v -trustcacerts -alias caelk -file ${ES_PATH_CONF}/certs/ca/ca.crt -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit' | grep keystore | cut -d" " -f4)
-            # if [[ $truststore_status -eq 1 ]]; then
-            #     logger "INFO" "CA was successfully added to truststore."
-            # else
-            #     logger "ERROR" "CA wasn't added to truststore."
-            # fi
+            # echo yes | /usr/share/elasticsearch/jdk/bin/keytool -import -v -trustcacerts -alias caelk -file ${ES_PATH_CONF}/certs/ca/ca.crt -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit'
+            truststore_status=$(echo yes | /usr/share/elasticsearch/jdk/bin/keytool -import -v -trustcacerts -alias caelk -file ${ES_PATH_CONF}/certs/ca/ca.crt -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit' | grep keystore | cut -d" " -f4)
+            if [[ $truststore_status -eq 1 ]]; then
+                logger "INFO" "CA was successfully added to truststore."
+            else
+                logger "ERROR" "CA wasn't added to truststore."
+            fi
+        else
+            # Check CA already present in truststore
+            truststore_ca_present=$(/usr/share/elasticsearch/jdk/bin/keytool -list -keystore ${ES_PATH_CONF}/certs/truststore.jks -storepass 'changeit' | grep keystore | cut -d" " -f4)
+            if [[ $truststore_ca_present -eq 1 ]]; then
+                logger "INFO" "CA is already exist in truststore, skipping creation step..."
+            else
+                logger "ERROR" "CA wasn't found in truststore."
+            fi
         fi
-        ###########
-
 
     else
         logger "ERROR" "Certificates wasn't generated."
@@ -64,6 +70,6 @@ fi
 
 chown -R 1000:1000 $CERTS_DIR;
 chmod -R 770 $CERTS_DIR;
-chown -R 1000:1000 /usr/share/elasticsearch/data;
+# chown -R 1000:1000 /usr/share/elasticsearch/data;
 
 logger "INFO" "$CONTAINER_NAME: Job done!"

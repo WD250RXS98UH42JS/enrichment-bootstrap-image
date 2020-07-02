@@ -11,7 +11,8 @@ do
   scheme=$(printf "$CHECK_SERVICE_URL" | cut -d ':' -f1)
   if [ "$scheme" == "http" ]; then
     # Checking through insecured connection
-    service_health=$(curl -s --insecure $CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_cluster/health)
+    service_health=$(curl -s -u $CHECK_SERVICE_USER:$CHECK_SERVICE_PASSWORD \
+                    $CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_cluster/health)
     service_status=$(expr "$service_health" : '.*"status":"\([^"]*\)"')
   elif [ "$scheme" == "https" ]; then
     # Checking through secured connection
