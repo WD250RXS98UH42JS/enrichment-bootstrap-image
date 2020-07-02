@@ -122,7 +122,7 @@ export ELASTIC_BOOTSTRAP_PASSWORD=$CHECK_SERVICE_PASSWORD
 
 create_user()
 {
-    local username_status=$(curl -s -o /dev/null -w "%{http_code}" \
+    local username_status=$(curl -s --insecure -o /dev/null -w "%{http_code}" \
                             -u $ELASTIC_BOOTSTRAP_USER:$ELASTIC_BOOTSTRAP_PASSWORD \
                             -XPUT -H 'Content-Type: application/json' \
                             "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/user/$2" \
@@ -135,7 +135,7 @@ create_user()
 
 check_user_exist()
 {
-    local username_status=$(curl -s -o /dev/null -w "%{http_code}" \
+    local username_status=$(curl -s --insecure -o /dev/null -w "%{http_code}" \
                             -u $ELASTIC_BOOTSTRAP_USER:$ELASTIC_BOOTSTRAP_PASSWORD \
                             "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/user/$2")
 
@@ -146,7 +146,7 @@ check_user_exist()
 
 change_password()
 {
-    local password_status=$(curl -s -o /dev/null -w "%{http_code}" \
+    local password_status=$(curl -s --insecure -o /dev/null -w "%{http_code}" \
                             -u $ELASTIC_BOOTSTRAP_USER:$ELASTIC_BOOTSTRAP_PASSWORD \
                             -XPUT -H 'Content-Type: application/json' \
                             "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/user/$2/_password" \
@@ -162,7 +162,7 @@ bootstrap_roles()
     local raw_roles_list=$3
     local roles_list="$(jq -scR '.[:-1] | split(",")' <<< $raw_roles_list)"
 
-    local roles_status=$(curl -s -o /dev/null -w "%{http_code}" \
+    local roles_status=$(curl --insecure -s -o /dev/null -w "%{http_code}" \
                         -u $ELASTIC_BOOTSTRAP_USER:$ELASTIC_BOOTSTRAP_PASSWORD \
                         -XPUT -H 'Content-Type: application/json' \
                         "$CHECK_SERVICE_URL:$CHECK_SERVICE_PORT/_security/user/$2/" \

@@ -2,7 +2,7 @@
 
 source /scripts/logger.sh
 
-until $(curl --output /dev/null --silent --head --fail http://kibana:5601/status);
+until $(curl --insecure --output /dev/null --silent --head --fail https://kibana:5601/api/status);
 do
 logger "INFO" "Kibana is down, waits until it starts"
 sleep 1
@@ -10,7 +10,7 @@ done
 
 for file in $(ls /scripts/dashboards);
 do
-    curl -X POST "http://kibana:5601/api/saved_objects/_import" --insecure  -H "kbn-xsrf: true" --form file="@$file"
+    curl --insecure -u ${KIBANA_USER}:${KIBANA_PASSWORD} -X POST "https://kibana:5601/api/saved_objects/_import" --insecure  -H "kbn-xsrf: true" --form file="@$file"
     logger "INFO" "$file succesfully uploaded"
 done
 
