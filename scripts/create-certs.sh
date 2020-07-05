@@ -35,11 +35,13 @@ source /scripts/logger.sh
 if [[ ! -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
     # Generating certificates
     # /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
-    /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
+    /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --pem --keep-ca-key --in ${ES_PATH_CONF}/instances.yml -out ${ES_PATH_CONF}/certs/bundle.zip;
     # Check if certificates was generated properly
     if [[ -f ${ES_PATH_CONF}/certs/bundle.zip ]]; then
         unzip -o ${ES_PATH_CONF}/certs/bundle.zip -d ${ES_PATH_CONF}/certs && \
         logger "INFO" "Certificates was generated successfully."
+         /usr/share/elasticsearch/bin/elasticsearch-certgen http --cert ${ES_PATH_CONF}/certs/ca/ca.crt --key ${ES_PATH_CONF}/certs/ca/ca.key --silent --in ${ES_PATH_CONF}/instances-http.yml --out ${ES_PATH_CONF}/certs/elasticsearch-http.zip;
+         unzip -o ${ES_PATH_CONF}/certs/elasticsearch-http.zip -d ${ES_PATH_CONF}/certs; 
 
         # Adding CA to truststore
         if [[ ! -f ${ES_PATH_CONF}/certs/truststore.jks ]]; then
